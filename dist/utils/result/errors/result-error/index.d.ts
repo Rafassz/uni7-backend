@@ -1,0 +1,1 @@
+export { IResultError } from './IResultError';
