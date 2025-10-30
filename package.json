@@ -8,7 +8,8 @@
     "start": "node dist/index.js",
     "start:dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "dev": "nodemon --exec ts-node src/index.ts",
-    "test:db": "ts-node test-connection.ts"
+    "test:db": "ts-node test-connection.ts",
+    "validate:db": "ts-node validate-connection.ts"
   },
   "keywords": [
     "api",
