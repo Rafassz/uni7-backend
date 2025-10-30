@@ -19,18 +19,18 @@ export interface DatabaseConfig {
 }
 
 export const databaseConfig: DatabaseConfig = {
-  server: process.env.DB_SERVER || 'localhost',
+  server: process.env.DB_SERVER || 'localhost\\SQLEXPRESS',
   database: process.env.DB_DATABASE || 'DenunciaDB',
   user: process.env.DB_USER || 'sa',
-  password: process.env.DB_PASSWORD || 'your_password',
+  password: process.env.DB_PASSWORD || '',
   port: parseInt(process.env.DB_PORT || '1433'),
   pool: {
-    max: 10,
-    min: 0,
-    idleTimeoutMillis: 30000,
+    max: parseInt(process.env.DB_POOL_MAX || '10'),
+    min: parseInt(process.env.DB_POOL_MIN || '2'),
+    idleTimeoutMillis: parseInt(process.env.DB_CONNECTION_TIMEOUT || '30000'),
   },
   options: {
-    encrypt: process.env.NODE_ENV === 'production', // true para Azure
+    encrypt: process.env.NODE_ENV === 'production', // false para desenvolvimento local
     trustServerCertificate: true, // true para desenvolvimento local
     enableArithAbort: true,
   },
@@ -61,12 +61,33 @@ class DatabaseConnection {
       const config: SqlConfig = {
         server: databaseConfig.server,
         database: databaseConfig.database,
-        user: databaseConfig.user,
-        password: databaseConfig.password,
         port: databaseConfig.port,
         pool: databaseConfig.pool,
         options: databaseConfig.options,
       };
+
+      // Configurar autenticação: Windows Auth ou SQL Auth
+      if (databaseConfig.user && databaseConfig.password && databaseConfig.password !== 'your_password_here') {
+        // SQL Server Authentication
+        config.user = databaseConfig.user;
+        config.password = databaseConfig.password;
+        console.log('🔑 Usando autenticação SQL Server');
+        console.log(`👤 Usuário: ${databaseConfig.user}`);
+      } else {
+        // Windows Authentication (Integrated Security)
+        config.authentication = {
+          type: 'ntlm',
+          options: {
+            domain: '',
+            userName: '',
+            password: ''
+          }
+        };
+        console.log('🔑 Usando autenticação Windows (Integrated Security)');
+      }
+
+      console.log(`🔗 Conectando ao servidor: ${databaseConfig.server}`);
+      console.log(`📊 Banco de dados: ${databaseConfig.database}`);
 
       this.pool = new ConnectionPool(config);
       
